@@ -5,14 +5,23 @@ import './App.css';
 
 const hues = range(0, 360);
 const slices = hues.length;
+function getRandomColors() {
+  return clone(hues).sort(() => 0.5 - Math.random()).map(hue => {
+    return 'hsl(' + hue + ', 100%, 50%)';
+  });
+}
+
+function getSortedColors() {
+  return hues.map(hue => {
+    return 'hsl(' + hue + ', 100%, 50%)';
+  });
+}
 
 class App extends Component {
-  sortColors() {
-    const sortedColors = hues.map(hue => {
-      return 'hsl(' + hue + ', 100%, 50%)';
-    });
-    this.clear();
-    sortedColors.forEach(this.drawSlice.bind(this));
+  constructor() {
+    super();
+
+    this.slices = getRandomColors();
   }
 
   componentDidUpdate() {
@@ -21,14 +30,24 @@ class App extends Component {
   componentDidMount() {
     this.updateCanvas();
   }
+
   drawSlice(color, idx) {
     this.ctx.fillStyle = color;
     this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
     this.ctx.fill();
   }
+  drawSlices() {
+    this.slices.forEach(this.drawSlice.bind(this));
+  }
+
   clear() {
     this.ctx.clearRect(0,0,this.width, this.height);
   }
+
+  animateSort(stepDelay) {
+    let colors = getRandomColors();
+  }
+
   updateCanvas() {
     this.canvas = document.getElementsByTagName('canvas')[0];
     this.ctx = this.canvas.getContext('2d');
@@ -36,13 +55,13 @@ class App extends Component {
     this.height = this.canvas.height;
     this.sliceWidth = this.width / slices;
 
-    const randomColors = clone(hues).sort(() => 0.5 - Math.random()).map(hue => {
-      return 'hsl(' + hue + ', 100%, 50%)';
-    });
-
-    randomColors.forEach(this.drawSlice.bind(this));
+    this.drawSlices();
     
-    setTimeout(() => this.sortColors(), 1000);
+    setTimeout(() => {
+      this.clear();
+      this.slices = getSortedColors();
+      this.drawSlices();
+    }, 1000);
   }
   render() {
     return (
