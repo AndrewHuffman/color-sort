@@ -1,11 +1,26 @@
 import React, {Component} from 'react';
-import colors from 'html-colors';
-import {values, range} from 'lodash';
-import convert from 'color-convert';
+// import colors from 'html-colors';
+import {range, clone} from 'lodash';
+// import convert from 'color-convert';
 import logo from './logo.svg';
 import './App.css';
 
+const hues = range(0, 360);
+const slices = hues.length;
+
 class App extends Component {
+  sortColors() {
+    const sortedColors = hues.map(hue => {
+      return 'hsl(' + hue + ', 100%, 50%)';
+    });
+    this.ctx.clearRect(0,0,500,500);
+    sortedColors.forEach((color, idx) => {
+      this.ctx.fillStyle = color;
+      this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
+      this.ctx.fill();
+    });
+  }
+
   componentDidUpdate() {
     this.updateCanvas();
   }
@@ -13,26 +28,22 @@ class App extends Component {
     this.updateCanvas();
   }
   updateCanvas() {
-    const canvas = document.getElementsByTagName('canvas')[0];
-    const ctx = canvas.getContext('2d');
-    const hues = range(0, 360);
-    const slices = hues.length;
-    const {width, height} = canvas;
-    const sliceWidth = width / slices;
-    const sortedColors = hues.map(hue => {
+    this.canvas = document.getElementsByTagName('canvas')[0];
+    this.ctx = this.canvas.getContext('2d');
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+    this.sliceWidth = this.width / slices;
+
+    const randomColors = clone(hues).sort(() => 0.5 - Math.random()).map(hue => {
       return 'hsl(' + hue + ', 100%, 50%)';
     });
-    const randomColors = hues.sort(() => 0.5 - Math.random()).map(hue => {
-      return 'hsl(' + hue + ', 100%, 50%)';
-    });
-    console.log(sortedColors);
 
     randomColors.forEach((color, idx) => {
-      console.log('color->', color)
-      ctx.fillStyle = color;
-      ctx.fillRect(idx * sliceWidth, 0, sliceWidth, height);
-      ctx.fill();
+      this.ctx.fillStyle = color;
+      this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
+      this.ctx.fill();
     });
+    setTimeout(() => this.sortColors(), 1000);
   }
   render() {
     return (
