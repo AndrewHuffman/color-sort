@@ -3,24 +3,44 @@ import {range, clone} from 'lodash';
 import logo from './logo.svg';
 import './App.css';
 
-const hues = range(0, 360);
-const slices = hues.length;
-function getRandomColors() {
-  return clone(hues).sort(() => 0.5 - Math.random()).map(hue => {
-    return 'hsl(' + hue + ', 100%, 50%)';
+function hueToHsl(hue) {
+  return 'hsl(' + hue + ', 100%, 50%)';
+}
+
+function toRandom(list) {
+  return list.sort(() => 0.5 - Math.random()).map(hue => {
+    return hue;
   });
 }
 
-function getSortedColors() {
-  return hues.map(hue => {
-    return 'hsl(' + hue + ', 100%, 50%)';
-  });
+function doQuickSortStep(list) {
+  const pivot = list[0];
+  let left = list.filter(n => n > pivot);
+  let right = list.filter(n => n <= pivot);
+  return {left, right};
+}
+
+function stepQuickSort(list) {
+  let {left, right} = doQuickSortStep(list);
+
+  return function step() {
+    let lStep = doQuickSortStep(left);
+    let rStep = doQuickSortStep(right);
+    left  = lStep.left.concat(lStep.right);
+    right = rStep.left.concat(rStep.right);
+    return left.concat(right);
+  }
 }
 
 class App extends Component {
   constructor() {
     super();
-    this.slices = getRandomColors();
+    this.hues = toRandom(range(0, 360));
+    this.stepper = stepQuickSort(this.hues);
+  }
+
+  get slices() {
+    return this.hues.map(hue => hueToHsl(hue));
   }
 
   componentDidUpdate() {
@@ -39,8 +59,8 @@ class App extends Component {
     this.updateCanvas();
   }
 
-  drawSlice(color, idx) {
-    this.ctx.fillStyle = color;
+  drawSlice(hue, idx) {
+    this.ctx.fillStyle = hueToHsl(hue);
     this
       .ctx
       .fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
@@ -51,7 +71,7 @@ class App extends Component {
 
   drawSlices() {
     this
-      .slices
+      .hues
       .forEach(this.drawSlice.bind(this));
   }
 
@@ -61,10 +81,18 @@ class App extends Component {
       .clearRect(0, 0, this.width, this.height);
   }
 
-  animateSort(stepDelay) {
-    this.clear();
-    this.slices = getSortedColors();
-    this.drawSlices();
+  animateSort() {
+    let steps = 10;
+    let interval = setInterval(() => {
+      console.log('?')
+      this.clear();
+      this.hues = this.stepper();
+      this.stepper = stepQuickSort(this.hues);
+      this.drawSlices();
+      if (--steps < 0) {
+        clearInterval(interval);
+      }
+    }, 500);
   }
 
   updateCanvas() {
@@ -81,7 +109,9 @@ class App extends Component {
         <p className="App-intro">
           <canvas height="500" width="500"></canvas>
         </p>
-        <button onClick={this.animateSort.bind(this)}>Sort</button>
+        <button onClick={this
+          .animateSort
+          .bind(this)}>Sort</button>
       </div>
     );
   }
