@@ -20,49 +20,57 @@ function getSortedColors() {
 class App extends Component {
   constructor() {
     super();
-
     this.slices = getRandomColors();
   }
 
   componentDidUpdate() {
     this.updateCanvas();
   }
+
   componentDidMount() {
+    this.canvas = document.getElementsByTagName('canvas')[0];
+    this.ctx = this
+      .canvas
+      .getContext('2d');
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+    this.sliceWidth = this.width / this.slices.length;
+
     this.updateCanvas();
   }
 
   drawSlice(color, idx) {
     this.ctx.fillStyle = color;
-    this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
-    this.ctx.fill();
+    this
+      .ctx
+      .fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
+    this
+      .ctx
+      .fill();
   }
+
   drawSlices() {
-    this.slices.forEach(this.drawSlice.bind(this));
+    this
+      .slices
+      .forEach(this.drawSlice.bind(this));
   }
 
   clear() {
-    this.ctx.clearRect(0,0,this.width, this.height);
+    this
+      .ctx
+      .clearRect(0, 0, this.width, this.height);
   }
 
   animateSort(stepDelay) {
-    let colors = getRandomColors();
+    this.clear();
+    this.slices = getSortedColors();
+    this.drawSlices();
   }
 
   updateCanvas() {
-    this.canvas = document.getElementsByTagName('canvas')[0];
-    this.ctx = this.canvas.getContext('2d');
-    this.width = this.canvas.width;
-    this.height = this.canvas.height;
-    this.sliceWidth = this.width / slices;
-
     this.drawSlices();
-    
-    setTimeout(() => {
-      this.clear();
-      this.slices = getSortedColors();
-      this.drawSlices();
-    }, 1000);
   }
+
   render() {
     return (
       <div className="App">
@@ -73,6 +81,7 @@ class App extends Component {
         <p className="App-intro">
           <canvas height="500" width="500"></canvas>
         </p>
+        <button onClick={this.animateSort.bind(this)}>Sort</button>
       </div>
     );
   }
