@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
-// import colors from 'html-colors';
 import {range, clone} from 'lodash';
-// import convert from 'color-convert';
 import logo from './logo.svg';
 import './App.css';
 
@@ -13,12 +11,8 @@ class App extends Component {
     const sortedColors = hues.map(hue => {
       return 'hsl(' + hue + ', 100%, 50%)';
     });
-    this.ctx.clearRect(0,0,500,500);
-    sortedColors.forEach((color, idx) => {
-      this.ctx.fillStyle = color;
-      this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
-      this.ctx.fill();
-    });
+    this.clear();
+    sortedColors.forEach(this.drawSlice.bind(this));
   }
 
   componentDidUpdate() {
@@ -26,6 +20,14 @@ class App extends Component {
   }
   componentDidMount() {
     this.updateCanvas();
+  }
+  drawSlice(color, idx) {
+    this.ctx.fillStyle = color;
+    this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
+    this.ctx.fill();
+  }
+  clear() {
+    this.ctx.clearRect(0,0,this.width, this.height);
   }
   updateCanvas() {
     this.canvas = document.getElementsByTagName('canvas')[0];
@@ -38,11 +40,8 @@ class App extends Component {
       return 'hsl(' + hue + ', 100%, 50%)';
     });
 
-    randomColors.forEach((color, idx) => {
-      this.ctx.fillStyle = color;
-      this.ctx.fillRect(idx * this.sliceWidth, 0, this.sliceWidth, this.height);
-      this.ctx.fill();
-    });
+    randomColors.forEach(this.drawSlice.bind(this));
+    
     setTimeout(() => this.sortColors(), 1000);
   }
   render() {
